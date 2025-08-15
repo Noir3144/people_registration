@@ -34,6 +34,7 @@ const RegForm = (function(){
   const containerSelector = '#camera-slots';
   let container;
   let capturedFiles = [];
+  let cameraInput; // persistent input
 
   function createEmptySlot(){
     const slot = document.createElement('div');
@@ -44,20 +45,24 @@ const RegForm = (function(){
   }
 
   function openCamera(slot){
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.capture = 'environment';
-    input.style.display = 'none';
-    input.addEventListener('change', async () => {
-      const file = input.files[0];
+    if (!cameraInput) {
+      cameraInput = document.createElement('input');
+      cameraInput.type = 'file';
+      cameraInput.accept = 'image/*';
+      cameraInput.capture = 'environment';
+      cameraInput.style.display = 'none';
+      document.body.appendChild(cameraInput);
+    }
+
+    cameraInput.onchange = async () => {
+      const file = cameraInput.files[0];
       if (!file) return;
       const compressed = await compressImage(file);
       showPreview(slot, compressed);
-    });
-    document.body.appendChild(input);
-    input.click();
-    input.remove();
+      cameraInput.value = ''; // reset so next click works
+    };
+
+    cameraInput.click();
   }
 
   function showPreview(slot, file){
@@ -128,6 +133,7 @@ const MissingForm = (function(){
   const containerSelector = '#missing-slots';
   let container;
   let uploadedFiles = [];
+  let uploadInput; // persistent input
 
   function createUploadSlot(){
     const slot = document.createElement('div');
@@ -138,19 +144,23 @@ const MissingForm = (function(){
   }
 
   function openFilePickerForSlot(slot){
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.style.display = 'none';
-    input.addEventListener('change', async () => {
-      const file = input.files[0];
+    if (!uploadInput) {
+      uploadInput = document.createElement('input');
+      uploadInput.type = 'file';
+      uploadInput.accept = 'image/*';
+      uploadInput.style.display = 'none';
+      document.body.appendChild(uploadInput);
+    }
+
+    uploadInput.onchange = async () => {
+      const file = uploadInput.files[0];
       if (!file) return;
       const compressed = await compressImage(file);
       showPreview(slot, compressed);
-    });
-    document.body.appendChild(input);
-    input.click();
-    input.remove();
+      uploadInput.value = ''; // reset
+    };
+
+    uploadInput.click();
   }
 
   function showPreview(slot, file){
