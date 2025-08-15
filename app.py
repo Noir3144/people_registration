@@ -56,6 +56,7 @@ def save_notifications(entry: dict):
     NOTIF_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 def normalize_e164(num: str) -> str:
+    """Return number in proper E.164 format without whatsapp: prefix"""
     num = (num or "").strip()
     num = re.sub(r"[^\d+]", "", num)
     if not num.startswith("+"):
@@ -65,6 +66,7 @@ def normalize_e164(num: str) -> str:
     return num
 
 def send_whatsapp_message(to_number: str, text: str):
+    """Send WhatsApp message via Twilio, auto-fixing format issues"""
     if not (TWILIO_SID and TWILIO_TOKEN and TWILIO_WHATSAPP_FROM):
         print("[TWILIO] Missing credentials")
         return False, "Twilio not configured"
@@ -72,9 +74,14 @@ def send_whatsapp_message(to_number: str, text: str):
         from twilio.rest import Client
         client = Client(TWILIO_SID, TWILIO_TOKEN)
         to = normalize_e164(to_number)
+        if not to.startswith("whatsapp:"):
+            to = f"whatsapp:{to}"
+        from_num = TWILIO_WHATSAPP_FROM
+        if not from_num.startswith("whatsapp:"):
+            from_num = f"whatsapp:{from_num}"
         msg = client.messages.create(
-            from_=TWILIO_WHATSAPP_FROM,
-            to=f"whatsapp:{to}",
+            from_=from_num,
+            to=to,
             body=text
         )
         print("[TWILIO] Sent:", msg.sid)
