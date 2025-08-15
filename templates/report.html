@@ -1,66 +1,71 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Report Missing</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Report Missing Person</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
-<body class="theme-dark">
-  <div class="glass-bg"></div>
-
-  <header class="nav">
-    <a class="btn btn-ghost pill" href="{{ url_for('index') }}">← Back</a>
-    <div class="brand">Report<span>Missing</span></div>
-    <div></div>
+<body class="ios-bg">
+  <header class="topbar">
+    <div class="brand">Crowd Portal</div>
+    <nav>
+      <a href="{{ url_for('language') }}" class="link">Language</a>
+      <a href="{{ url_for('index') }}" class="link">Register</a>
+      <a href="#" id="notif-btn-2" class="link">Notifications</a>
+    </nav>
   </header>
 
   <main class="container">
     <section class="card">
-      <div class="card-head">
-        <h1 class="title">Submit a Missing Report</h1>
-        <p class="sub">Add contact details and the person’s photo.</p>
-      </div>
+      <h2>Report Missing Person</h2>
+      <form id="missing-form" method="POST" action="{{ url_for('submit_missing') }}" enctype="multipart/form-data">
+        <div class="field">
+          <label>Phone (required)</label>
+          <input type="text" name="phone" required placeholder="+91xxxxxxxxxx">
+        </div>
 
-      <form action="{{ url_for('submit_missing') }}" method="POST" enctype="multipart/form-data" class="form">
-        <div class="grid-2">
-          <div class="field">
-            <label>Phone Number</label>
-            <input type="text" name="phone" placeholder="+91XXXXXXXXXX" required />
-          </div>
-          <div class="field">
-            <label>WhatsApp Number</label>
-            <input type="text" name="whatsapp" placeholder="+91XXXXXXXXXX" required />
-          </div>
+        <div class="field">
+          <label>WhatsApp (required)</label>
+          <input type="text" name="whatsapp" required placeholder="+91xxxxxxxxxx">
         </div>
 
         <div class="field">
           <label>Description</label>
-          <textarea name="description" rows="4" placeholder="Height, last seen location, clothes, any other info..."></textarea>
+          <textarea name="description" placeholder="Short description (clothes, age, location)"></textarea>
         </div>
 
         <div class="field">
-          <label>Missing Person Photo</label>
-          <div class="photo-row">
-            <div class="photo-slot">
-              <input type="file" name="missing_photo" accept=".jpg,.jpeg,.png" onchange="previewSingle(this)" required>
-              <div class="slot-body">
-                <div class="slot-plus">+</div>
-                <div class="slot-hint">Add Photo</div>
-              </div>
-            </div>
-          </div>
-          <div class="hint">Only JPG, JPEG, PNG allowed.</div>
+          <label>Photos (upload)</label>
+          <div id="missing-slots" class="slots"></div>
+          <!-- hidden file input used for the missing form uploads -->
+          <input type="file" name="missing_photos" id="missing-hidden-input" accept="image/*" style="display:none" multiple>
+          <div class="muted small">Use the upload slot to select photos from device or computer. New slots appear after each upload.</div>
         </div>
 
-        <button type="submit" class="btn btn-danger wide">Submit Report</button>
+        <div class="actions">
+          <button class="btn" type="submit">Submit Missing Report</button>
+        </div>
       </form>
     </section>
   </main>
 
-  <footer class="footer">
-    <div>Need help? Contact local authorities immediately.</div>
-  </footer>
+  <div id="notif-modal" class="modal hidden">
+    <div class="modal-card">
+      <header class="modal-header">
+        <h3>Notifications</h3>
+        <button class="close" id="close-notif-2">&times;</button>
+      </header>
+      <div class="modal-body" id="notif-list-2"></div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      MissingForm.initUploadSlots();
+      Notif.init('#notif-btn-2', '#notif-modal', '#notif-list-2', '#close-notif-2');
+    });
+  </script>
 </body>
 </html>

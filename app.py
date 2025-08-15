@@ -3,12 +3,13 @@ import json
 import datetime
 import re
 from pathlib import Path
-from flask import Flask, render_template, request, redirect, url_for, jsonify, flash
+from flask import Flask, render_template, request, redirect, url_for, jsonify, flash, make_response
 
 # ------------ Configuration ------------
 USE_LOCAL_SAVE = os.environ.get("LOCAL_SAVE", "1") == "1"
 
 if USE_LOCAL_SAVE:
+    # Default to Desktop to make it obvious for local testing. Change as needed.
     BASE_DIR = Path.home() / "Desktop"
 else:
     BASE_DIR = Path(__file__).parent.resolve()
@@ -56,9 +57,11 @@ def save_notifications(entry: dict):
     NOTIF_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
 
 def normalize_e164(num: str) -> str:
-    """Return number in proper E.164 format without whatsapp: prefix"""
+    """Return number in E.164-like format (with +91 if missing)."""
     num = (num or "").strip()
     num = re.sub(r"[^\d+]", "", num)
+    if not num:
+        return num
     if not num.startswith("+"):
         if num.startswith("0"):
             num = num.lstrip("0")
@@ -66,9 +69,9 @@ def normalize_e164(num: str) -> str:
     return num
 
 def send_whatsapp_message(to_number: str, text: str):
-    """Send WhatsApp message via Twilio, auto-fixing format issues"""
+    """Send WhatsApp message via Twilio (optional)."""
     if not (TWILIO_SID and TWILIO_TOKEN and TWILIO_WHATSAPP_FROM):
-        print("[TWILIO] Missing credentials")
+        print("[TWILIO] Missing credentials (skipping)")
         return False, "Twilio not configured"
     try:
         from twilio.rest import Client
@@ -93,24 +96,39 @@ def send_whatsapp_message(to_number: str, text: str):
 # ------------ Routes ------------
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("index.html")
+    # read chosen language from cookie (used by frontend JS)
+    lang = request.cookies.get("lang", "en")
+    return render_template("index.html", lang=lang)
+
+@app.route("/language", methods=["GET", "POST"])
+def language():
+    if request.method == "GET":
+        return render_template("language.html")
+    # POST: set language cookie and redirect to index
+    lang = request.form.get("lang", "en")
+    resp = make_response(redirect(url_for("index")))
+    resp.set_cookie("lang", lang, max_age=60*60*24*365)  # 1 year
+    return resp
 
 @app.route("/report", methods=["GET"])
 def report_missing_page():
-    return render_template("report.html")
+    lang = request.cookies.get("lang", "en")
+    return render_template("report.html", lang=lang)
 
 @app.route("/register", methods=["POST"])
 def register():
     try:
         phone = (request.form.get("phone") or "").strip()
         whatsapp = (request.form.get("whatsapp") or "").strip()
+        secondary = (request.form.get("secondary") or "").strip()
+
         if not phone or not whatsapp:
-            flash("Phone aur WhatsApp number required hai.")
+            flash("Phone and WhatsApp number are required.")
             return redirect(url_for("index"))
 
+        # Save registration folder and family photos
         user_root = REG_ROOT / phone
-        family_folder = user_root / "family"
-        family_folder.mkdir(parents=True, exist_ok=True)
+        user_root.mkdir(parents=True, exist_ok=True)
 
         photos = request.files.getlist("family_photos")
         saved_count = 0
@@ -119,17 +137,26 @@ def register():
                 continue
             if not is_allowed(f.filename):
                 continue
-            idx = next_index(family_folder, "p")
+            idx = next_index(user_root, "p")
             ext = Path(f.filename).suffix.lower()
-            save_path = family_folder / f"p{idx}{ext}"
+            save_path = user_root / f"p{idx}{ext}"
             f.save(save_path)
             saved_count += 1
+
+        # Save a small metadata file for contact numbers
+        meta = {
+            "phone": phone,
+            "whatsapp": whatsapp,
+            "secondary": secondary,
+            "timestamp": datetime.datetime.now().isoformat()
+        }
+        (user_root / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
 
         site_url = request.host_url.rstrip("/")
         message = (
             f"Registration successful for {phone}.\n"
             f"Photos saved: {saved_count}.\n"
-            f"Reopen the portal anytime: {site_url}"
+            f"Portal: {site_url}"
         )
         if whatsapp:
             send_whatsapp_message(whatsapp, message)
@@ -146,41 +173,45 @@ def submit_missing():
         phone = (request.form.get("phone") or "").strip()
         whatsapp = (request.form.get("whatsapp") or "").strip()
         desc = (request.form.get("description") or "").strip()
-        mphoto = request.files.get("missing_photo")
+        # support multiple uploaded files from missing form
+        photos = request.files.getlist("missing_photos")
 
-        if not phone or not whatsapp or not mphoto or not mphoto.filename:
-            flash("Phone, WhatsApp aur Missing photo required hai.")
-            return redirect(url_for("report_missing_page"))
-
-        if not is_allowed(mphoto.filename):
-            flash("Missing photo sirf JPG/JPEG/PNG allowed hai.")
+        if not phone or not whatsapp or not photos or all((not p or not p.filename) for p in photos):
+            flash("Phone, WhatsApp and at least one photo are required.")
             return redirect(url_for("report_missing_page"))
 
         user_miss = MISS_ROOT / phone
         user_miss.mkdir(parents=True, exist_ok=True)
 
-        idx = next_index(user_miss, "m")
-        ext = Path(mphoto.filename).suffix.lower()
-        photo_path = user_miss / f"m{idx}{ext}"
-        mphoto.save(photo_path)
+        saved = 0
+        for p in photos:
+            if not p or not p.filename:
+                continue
+            if not is_allowed(p.filename):
+                continue
+            idx = next_index(user_miss, "m")
+            ext = Path(p.filename).suffix.lower()
+            photo_path = user_miss / f"m{idx}{ext}"
+            p.save(photo_path)
+            # create a description file per photo (if provided)
+            if desc:
+                (user_miss / f"m{idx}.txt").write_text(desc, encoding="utf-8")
+            saved += 1
 
-        if desc:
-            (user_miss / f"m{idx}.txt").write_text(desc, encoding="utf-8")
-
-        ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        notification = {
-            "phone": phone,
-            "file": photo_path.name,
-            "timestamp": ts,
-            "status": "reported",
-            "description": desc[:140]
-        }
-        save_notifications(notification)
+            ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            notification = {
+                "phone": phone,
+                "file": photo_path.name,
+                "timestamp": ts,
+                "status": "reported",
+                "description": (desc[:200] if desc else "")
+            }
+            save_notifications(notification)
 
         site_url = request.host_url.rstrip("/")
         msg = (
-            f"Missing report received for {phone} at {ts}.\n"
-            f"We will notify here if found.\n"
+            f"Missing report received for {phone} at {datetime.datetime.now().isoformat()}.\n"
+            f"Photos saved: {saved}.\n"
             f"Portal: {site_url}"
         )
         if whatsapp:
@@ -211,7 +242,7 @@ def diag_twilio():
     if not to:
         return {"ok": False, "error": "missing to"}, 400
 
-    ok, info = send_whatsapp_message(to, "[Test] Render WhatsApp Test OK")
+    ok, info = send_whatsapp_message(to, "[Test] Portal WhatsApp Test")
     return {"ok": ok, "info": info}
 
 # -------------- Run --------------

@@ -1,0 +1,13 @@
+{
+  "title_register": "Registration",
+  "choose_language": "Choose Language",
+  "choose_lang_desc": "Select your preferred language for the site.",
+  "save_language": "Save & Continue",
+  "registration_form": "Registration",
+  "mobile_no": "Mobile No",
+  "whatsapp_no": "WhatsApp No",
+  "secondary_no": "Secondary Contact No",
+  "photos": "Photos",
+  "camera_hint": "Click the + slot to capture a photo using your device camera. New slots appear after capture.",
+  "submit": "Submit"
+}

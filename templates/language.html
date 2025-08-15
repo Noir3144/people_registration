@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Choose Language</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="page-center ios-bg">
+  <main class="card centered-card">
+    <h1 data-i18n="choose_language">Choose Language</h1>
+    <p class="muted" data-i18n="choose_lang_desc">Select your preferred language for the site.</p>
+
+    <!-- List of common Indian languages. Add more codes in /static/i18n/*.json -->
+    <form method="post" id="lang-form">
+      <div class="lang-list">
+        <label><input type="radio" name="lang" value="en" checked> English</label>
+        <label><input type="radio" name="lang" value="hi"> हिन्दी (Hindi)</label>
+        <label><input type="radio" name="lang" value="bn"> বাংলা (Bengali)</label>
+        <label><input type="radio" name="lang" value="ta"> தமிழ் (Tamil)</label>
+        <label><input type="radio" name="lang" value="te"> తెలుగు (Telugu)</label>
+        <label><input type="radio" name="lang" value="mr"> मराठी (Marathi)</label>
+        <label><input type="radio" name="lang" value="gu"> ગુજરાતી (Gujarati)</label>
+        <label><input type="radio" name="lang" value="kn"> ಕನ್ನಡ (Kannada)</label>
+        <label><input type="radio" name="lang" value="ml"> മലയാളം (Malayalam)</label>
+        <label><input type="radio" name="lang" value="pa"> ਪੰਜਾਬੀ (Punjabi)</label>
+        <label><input type="radio" name="lang" value="or"> ଓଡ଼ିଆ (Odia)</label>
+        <!-- Add others as needed -->
+      </div>
+      <div class="actions">
+        <button class="btn" type="submit" data-i18n="save_language">Save & Continue</button>
+      </div>
+    </form>
+  </main>
+
+  <script>
+    // Optionally select the radio based on cookie
+    const lang = document.cookie.split('; ').find(r=>r.startsWith('lang='))?.split('=')[1];
+    if(lang){
+      const el = document.querySelector(`input[name="lang"][value="${lang}"]`);
+      if(el) el.checked = true;
+    }
+  </script>
+</body>
+</html>

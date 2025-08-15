@@ -1,0 +1,13 @@
+{
+  "title_register": "रजिस्ट्रेशन",
+  "choose_language": "भाषा चुनें",
+  "choose_lang_desc": "साइट के लिए अपनी पसंदीदा भाषा चुनें।",
+  "save_language": "सहेजें और जारी रखें",
+  "registration_form": "पंजीकरण",
+  "mobile_no": "मोबाइल नंबर",
+  "whatsapp_no": "व्हाट्सऐप नंबर",
+  "secondary_no": "दूसरा संपर्क (ऑप्शनल)",
+  "photos": "फ़ोटो",
+  "camera_hint": "कृपया + वाले स्लॉट पर क्लिक करके कैमरा खोलें और फोटो लें।",
+  "submit": "सबमिट करें"
+}
