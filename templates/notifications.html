@@ -3,45 +3,34 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Notifications</title>
+  <title data-i18n="notifications">Notifications</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <header class="app-bar">
-    <div class="brand">
-      <div class="brand-badge"></div>
-      <h1>People Connect</h1>
-    </div>
-    <button class="toggle" id="theme-toggle" title="Switch theme">
-      <span class="small muted">Theme</span>
-      <span class="dot"></span>
-    </button>
-  </header>
+<header class="app-bar">
+  <div class="brand">
+    <div class="brand-badge"></div>
+    <h1>People Connect</h1>
+  </div>
+  <nav class="nav-actions">
+    <a class="ghost" href="{{ url_for('language') }}" data-i18n="change_language">Language</a>
+    <a class="ghost" href="{{ url_for('index') }}" data-i18n="registration">Registration</a>
+    <button class="toggle" id="theme-toggle" title="Switch theme"><span class="small muted">Theme</span><span class="dot"></span></button>
+  </nav>
+</header>
 
-  <main class="container" style="display:flex; justify-content:center;">
-    <section class="card" style="max-width: 800px; width: 100%;">
-      <h2>Notification Board</h2>
-      <div id="notif-list" class="mt-18">
-        <div class="muted">Loading…</div>
-      </div>
-    </section>
-  </main>
+<main class="container center">
+  <section class="card glass card-float" style="max-width:900px;">
+    <h2 data-i18n="notifications">Notification Board</h2>
+    <div id="notif-list" class="mt-18 list"></div>
+  </section>
+</main>
 
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-  <script>
-    if (window.Notif?.load) Notif.load();
-
-    const root = document.documentElement;
-    const saved = localStorage.getItem('theme');
-    if (saved) root.setAttribute('data-theme', saved);
-    else if (window.matchMedia('(prefers-color-scheme: light)').matches)
-      root.setAttribute('data-theme', 'light');
-
-    document.getElementById('theme-toggle').addEventListener('click', () => {
-      const newTheme = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-      root.setAttribute('data-theme', newTheme);
-      localStorage.setItem('theme', newTheme);
-    });
-  </script>
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+<script>
+  UI.initTheme();
+  I18N.load();
+  Notif.load('{{ url_for("notifications_api") }}');
+</script>
 </body>
 </html>

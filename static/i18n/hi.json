@@ -1,13 +1,18 @@
 {
-  "title_register": "रजिस्ट्रेशन",
-  "choose_language": "भाषा चुनें",
-  "choose_lang_desc": "साइट के लिए अपनी पसंदीदा भाषा चुनें।",
-  "save_language": "सहेजें और जारी रखें",
-  "registration_form": "पंजीकरण",
+  "select_language": "अपनी भाषा चुनें",
+  "choose_language": "आगे बढ़ने के लिए एक भारतीय भाषा चुनें",
+  "registration": "रजिस्ट्रेशन",
+  "missing_report": "लापता व्यक्ति रिपोर्ट",
+  "notifications": "सूचनाएँ",
   "mobile_no": "मोबाइल नंबर",
-  "whatsapp_no": "व्हाट्सऐप नंबर",
-  "secondary_no": "दूसरा संपर्क (ऑप्शनल)",
-  "photos": "फ़ोटो",
-  "camera_hint": "कृपया + वाले स्लॉट पर क्लिक करके कैमरा खोलें और फोटो लें।",
-  "submit": "सबमिट करें"
+  "whatsapp_no": "व्हाट्सएप नंबर",
+  "secondary_no": "दूसरा संपर्क (वैकल्पिक)",
+  "photos": "फोटो",
+  "submit": "सबमिट",
+  "report_missing": "लापता रिपोर्ट",
+  "change_language": "भाषा",
+  "reporter_phone": "फ़ोन (रिपोर्ट करने वाला)",
+  "reporter_whatsapp": "व्हाट्सएप",
+  "description": "विवरण",
+  "missing_photos": "लापता व्यक्ति की फ़ोटो"
 }

@@ -1,276 +1,173 @@
-// ================= IMAGE COMPRESSION HELPER =================
-function compressImage(file, maxSize = 1280, quality = 0.8) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      let { width, height } = img;
-      if (width > height && width > maxSize) {
-        height = Math.round((height *= maxSize / width));
-        width = maxSize;
-      } else if (height > maxSize) {
-        width = Math.round((width *= maxSize / height));
-        height = maxSize;
-      }
+/* ===== Theme, i18n, Slots, Notifications ===== */
 
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(img, 0, 0, width, height);
-      canvas.toBlob(
-        (blob) => {
-          resolve(new File([blob], file.name.replace(/\.\w+$/, ".jpeg"), { type: "image/jpeg" }));
-        },
-        "image/jpeg",
-        quality
-      );
-    };
-    img.src = URL.createObjectURL(file);
-  });
-}
-
-// ================= REGISTRATION FORM (Camera App) =================
-const RegForm = (function(){
-  const containerSelector = '#camera-slots';
-  let container;
-  let capturedFiles = [];
-  let cameraInput; // persistent input
-
-  function createEmptySlot(){
-    const slot = document.createElement('div');
-    slot.className = 'slot slot-empty';
-    slot.innerHTML = `<div class="plus">+</div>`;
-    slot.addEventListener('click', () => openCamera(slot));
-    return slot;
-  }
-
-  function openCamera(slot){
-    if (!cameraInput) {
-      cameraInput = document.createElement('input');
-      cameraInput.type = 'file';
-      cameraInput.accept = 'image/*';
-      cameraInput.capture = 'environment';
-      cameraInput.style.display = 'none';
-      document.body.appendChild(cameraInput);
+const UI = (() => {
+  const initTheme = () => {
+    const root = document.documentElement;
+    const saved = localStorage.getItem('theme');
+    if (saved) root.setAttribute('data-theme', saved);
+    else if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+      root.setAttribute('data-theme', 'light');
     }
-
-    cameraInput.onchange = async () => {
-      const file = cameraInput.files[0];
-      if (!file) return;
-      const compressed = await compressImage(file);
-      showPreview(slot, compressed);
-      cameraInput.value = ''; // reset so next click works
-    };
-
-    cameraInput.click();
-  }
-
-  function showPreview(slot, file){
-    const url = URL.createObjectURL(file);
-    slot.classList.remove('slot-empty');
-    slot.innerHTML = `<img src="${url}">`;
-
-    capturedFiles.push(file);
-
-    const actions = document.createElement('div');
-    actions.className = 'slot-actions';
-
-    const retake = document.createElement('button');
-    retake.className = 'small-btn';
-    retake.innerText = 'Retake';
-    retake.addEventListener('click', () => {
-      capturedFiles = capturedFiles.filter(f => f !== file);
-      openCamera(slot);
-    });
-
-    const remove = document.createElement('button');
-    remove.className = 'small-btn';
-    remove.innerText = 'Remove';
-    remove.addEventListener('click', () => {
-      capturedFiles = capturedFiles.filter(f => f !== file);
-      slot.remove();
-    });
-
-    actions.appendChild(remove);
-    actions.appendChild(retake);
-    slot.appendChild(actions);
-
-    if (!container.querySelector('.slot-empty')) {
-      container.appendChild(createEmptySlot());
-    }
-  }
-
-  function hijackSubmit(){
-    const form = document.getElementById('reg-form');
-    form.addEventListener('submit', (ev) => {
-      ev.preventDefault();
-      const fd = new FormData(form);
-      capturedFiles.forEach((f, i) => {
-        fd.append('family_photos', f, `p${i+1}.jpeg`);
+    const toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', next);
+        localStorage.setItem('theme', next);
       });
-      fetch(form.action, {method:'POST', body: fd})
-        .then(r => {
-          if (r.redirected) window.location = r.url;
-          else return r.text().then(t => { alert('Submitted'); });
-        })
-        .catch(err => { alert('Upload failed: ' + err); });
-    });
-  }
-
-  return {
-    initCameraSlots: function(){
-      container = document.querySelector(containerSelector);
-      if(!container) return;
-      container.innerHTML = '';
-      container.appendChild(createEmptySlot());
-      hijackSubmit();
     }
   };
+  return { initTheme };
 })();
 
-// ================= MISSING FORM (File Upload) =================
-const MissingForm = (function(){
-  const containerSelector = '#missing-slots';
-  let container;
-  let uploadedFiles = [];
-  let uploadInput; // persistent input
-
-  function createUploadSlot(){
-    const slot = document.createElement('div');
-    slot.className = 'slot slot-empty';
-    slot.innerHTML = `<div class="plus">+</div>`;
-    slot.addEventListener('click', () => openFilePickerForSlot(slot));
-    return slot;
-  }
-
-  function openFilePickerForSlot(slot){
-    if (!uploadInput) {
-      uploadInput = document.createElement('input');
-      uploadInput.type = 'file';
-      uploadInput.accept = 'image/*';
-      uploadInput.style.display = 'none';
-      document.body.appendChild(uploadInput);
-    }
-
-    uploadInput.onchange = async () => {
-      const file = uploadInput.files[0];
-      if (!file) return;
-      const compressed = await compressImage(file);
-      showPreview(slot, compressed);
-      uploadInput.value = ''; // reset
-    };
-
-    uploadInput.click();
-  }
-
-  function showPreview(slot, file){
-    const url = URL.createObjectURL(file);
-    slot.classList.remove('slot-empty');
-    slot.innerHTML = `<img src="${url}">`;
-
-    uploadedFiles.push(file);
-
-    const actions = document.createElement('div');
-    actions.className = 'slot-actions';
-
-    const replace = document.createElement('button');
-    replace.className = 'small-btn';
-    replace.innerText = 'Replace';
-    replace.addEventListener('click', () => {
-      uploadedFiles = uploadedFiles.filter(f => f !== file);
-      openFilePickerForSlot(slot);
-    });
-
-    const remove = document.createElement('button');
-    remove.className = 'small-btn';
-    remove.innerText = 'Remove';
-    remove.addEventListener('click', () => {
-      uploadedFiles = uploadedFiles.filter(f => f !== file);
-      slot.remove();
-    });
-
-    actions.appendChild(remove);
-    actions.appendChild(replace);
-    slot.appendChild(actions);
-
-    if (!container.querySelector('.slot-empty')) {
-      container.appendChild(createUploadSlot());
-    }
-  }
-
-  function hijackSubmit(){
-    const form = document.getElementById('missing-form');
-    form.addEventListener('submit', (ev) => {
-      ev.preventDefault();
-      const fd = new FormData(form);
-      uploadedFiles.forEach((f, i) => {
-        fd.append('missing_photos', f, `m${i+1}.jpeg`);
+const I18N = (() => {
+  const load = async (forceLang) => {
+    const lang = forceLang || (document.cookie.match(/(?:^|;\s*)lang=([^;]+)/)?.[1]) || 'en';
+    try {
+      const res = await fetch(`/static/i18n/${lang}.json`, { cache: 'no-cache' });
+      const dict = await res.json();
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.dataset.i18n;
+        if (dict[key]) el.textContent = dict[key];
       });
-      fetch(form.action, {method:'POST', body: fd})
-        .then(r => {
-          if (r.redirected) window.location = r.url;
-          else return r.text().then(t => { alert('Submitted'); });
-        })
-        .catch(err => { alert('Upload failed: ' + err); });
-    });
-  }
-
-  return {
-    initUploadSlots: function(){
-      container = document.querySelector(containerSelector);
-      if(!container) return;
-      container.innerHTML = '';
-      container.appendChild(createUploadSlot());
-      hijackSubmit();
+    } catch (e) {
+      // silent fail; English stays
     }
   };
+  return { load };
 })();
 
-// ================= NOTIFICATIONS =================
-const Notif = (function(){
-  function fetchAndShow(listEl){
-    fetch('/notifications')
-      .then(r => r.json())
-      .then(data => {
-        if (!data || !data.length) {
-          listEl.innerHTML = '<div class="muted small">No notifications yet.</div>';
-          return;
+/* ---- Dynamic photo slots ----
+   - data-mode="camera" => opens device camera
+   - data-mode="upload" => gallery/file picker
+   - data-name="reg_photos[]" or "missing_photos[]"
+*/
+const Slots = (() => {
+  const template = (name, mode) => {
+    // capture attr only for camera mode
+    const capture = mode === 'camera' ? ' capture="environment" ' : '';
+    return `
+    <div class="slot">
+      <label class="slot-box">
+        <input class="slot-input" type="file" accept="image/*" ${capture} name="${name}" />
+        <div class="slot-empty">
+          <span class="plus">＋</span>
+          <span class="hint">${mode === 'camera' ? 'Tap to open camera' : 'Tap to upload'}</span>
+        </div>
+        <img class="slot-preview" alt="" />
+      </label>
+      <div class="slot-actions">
+        <button type="button" class="ghost sm slot-retake">Retake</button>
+        <button type="button" class="ghost sm slot-remove">Remove</button>
+      </div>
+    </div>`;
+  };
+
+  const onChange = (slot, list) => {
+    const input = slot.querySelector('.slot-input');
+    const preview = slot.querySelector('.slot-preview');
+    const empty = slot.querySelector('.slot-empty');
+
+    if (input.files && input.files[0]) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        preview.src = reader.result;
+        preview.style.display = 'block';
+        empty.style.display = 'none';
+
+        // ensure there is always one empty slot at the end
+        const unused = list.querySelectorAll('.slot-input:not([data-used])');
+        input.dataset.used = '1';
+        if (unused.length === 0) {
+          // create one more slot
+          const mode = list.dataset.mode;
+          const name = list.dataset.name;
+          list.insertAdjacentHTML('beforeend', template(name, mode));
+          bindSlot(list.lastElementChild, list);
         }
-        listEl.innerHTML = '';
-        data.forEach(item => {
-          const el = document.createElement('div');
-          el.className = 'notif-item';
-          el.style.padding = '10px 0';
-          el.style.borderBottom = '1px solid rgba(255,255,255,0.03)';
-          el.innerHTML = `<strong>${item.phone}</strong>
-                          <div class="small muted">${item.timestamp}</div>
-                          <div>${item.description || ''}</div>
-                          <div class="small">File: ${item.file}</div>`;
-          listEl.appendChild(el);
-        });
-      });
-  }
-
-  function bind(btnSel, modalSel, listSel, closeSel){
-    const btn = document.querySelector(btnSel);
-    const modal = document.querySelector(modalSel);
-    const listEl = document.querySelector(listSel);
-    const closeBtn = document.querySelector(closeSel);
-    if(!btn || !modal || !listEl || !closeBtn) return;
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-      modal.classList.remove('hidden');
-      fetchAndShow(listEl);
-    });
-    closeBtn.addEventListener('click', () => modal.classList.add('hidden'));
-    modal.addEventListener('click', (ev) => {
-      if(ev.target === modal) modal.classList.add('hidden');
-    });
-  }
-
-  return {
-    init: function(btnSel = '#notif-btn', modalSel = '#notif-modal', listSel = '#notif-list', closeSel = '#close-notif'){
-      bind(btnSel, modalSel, listSel, closeSel);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      // cleared
+      preview.src = '';
+      preview.style.display = 'none';
+      empty.style.display = 'flex';
+      delete input.dataset.used;
     }
   };
+
+  const onRetake = (slot) => {
+    const input = slot.querySelector('.slot-input');
+    input.value = '';
+    input.click(); // reopen chooser/camera
+  };
+
+  const onRemove = (slot, list) => {
+    slot.remove();
+    // ensure at least one empty slot exists
+    if (!list.querySelector('.slot-input')) {
+      const mode = list.dataset.mode;
+      const name = list.dataset.name;
+      list.insertAdjacentHTML('beforeend', template(name, mode));
+      bindSlot(list.lastElementChild, list);
+    }
+  };
+
+  const bindSlot = (slot, list) => {
+    slot.querySelector('.slot-input').addEventListener('change', () => onChange(slot, list));
+    slot.querySelector('.slot-retake').addEventListener('click', () => onRetake(slot));
+    slot.querySelector('.slot-remove').addEventListener('click', () => onRemove(slot, list));
+  };
+
+  const init = (selector) => {
+    const list = document.querySelector(selector);
+    if (!list) return;
+    // first empty slot
+    list.insertAdjacentHTML('beforeend', template(list.dataset.name, list.dataset.mode));
+    bindSlot(list.lastElementChild, list);
+  };
+
+  return { init };
+})();
+
+/* ---- Notifications ---- */
+const Notif = (() => {
+  const renderItem = (n) => {
+    const badge = n.kind === 'missing' ? 'badge-warn' : 'badge-ok';
+    const title = n.kind === 'missing' ? 'Missing Report' : 'Registration';
+    const extras = [];
+    if (n.extra && typeof n.extra === 'object') {
+      Object.entries(n.extra).forEach(([k, v]) => extras.push(`${k}: ${v}`));
+    }
+    return `
+      <div class="row-item">
+        <div class="row-left">
+          <span class="badge ${badge}"></span>
+        </div>
+        <div class="row-main">
+          <div class="row-title">${title} • ${n.phone}</div>
+          <div class="row-sub">${new Date(n.ts).toLocaleString()}</div>
+          ${extras.length ? `<div class="row-extra">${extras.join(' · ')}</div>` : ''}
+        </div>
+      </div>
+    `;
+  };
+
+  const load = async (api) => {
+    const list = document.getElementById('notif-list');
+    list.innerHTML = '<div class="muted">Loading…</div>';
+    try {
+      const res = await fetch(api || '/api/notifications', { cache: 'no-cache' });
+      const data = await res.json();
+      if (!data.length) {
+        list.innerHTML = '<div class="muted">No notifications yet.</div>';
+        return;
+      }
+      list.innerHTML = data.map(renderItem).join('');
+    } catch (e) {
+      list.innerHTML = '<div class="muted">Failed to load.</div>';
+    }
+  };
+  return { load };
 })();
