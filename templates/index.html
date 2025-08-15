@@ -1,57 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Registration | People Portal</title>
-  <link rel="stylesheet" href="/static/style.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration - People Portal</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
-<body class="theme-dark">
-  <header class="nav">
-    <div class="brand">People Portal</div>
-    <a class="btn btn-outline" href="/report">Report Missing</a>
-  </header>
+<body>
+<div class="blur-bg"></div>
 
-  <main class="container">
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="toast">
-          {% for m in messages %}<div class="toast-item">{{ m }}</div>{% endfor %}
-        </div>
-      {% endif %}
-    {% endwith %}
+<header>
+    <h1>People Registration</h1>
+    <a href="{{ url_for('report_missing_page') }}" class="btn-report">Report Missing</a>
+</header>
 
-    <section class="card glass">
-      <h1 class="title">Registration</h1>
-      <form id="regForm" action="/register" method="POST" enctype="multipart/form-data">
-        <label class="label" for="phone">Phone Number</label>
-        <input class="input" type="text" id="phone" name="phone" placeholder="+91XXXXXXXXXX" required />
+<main>
+    <section class="form-section">
+        <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data">
+            <label>Phone Number</label>
+            <input type="text" name="phone" placeholder="+91XXXXXXXXXX" required>
 
-        <label class="label" for="whatsapp">WhatsApp Number</label>
-        <input class="input" type="text" id="whatsapp" name="whatsapp" placeholder="+91XXXXXXXXXX" required />
+            <label>WhatsApp Number</label>
+            <input type="text" name="whatsapp" placeholder="+91XXXXXXXXXX" required>
 
-        <label class="label">Family Photos</label>
-        <div id="photoZone" class="photo-zone">
-          <!-- First field -->
-          <label class="drop" aria-label="Upload photo">
-            <span class="plus">+</span>
-            <input type="file" name="family_photos" accept=".jpg,.jpeg,.png" required />
-          </label>
-        </div>
-        <button type="button" id="addPhotoBtn" class="btn btn-subtle">Add another photo</button>
+            <label>Family Photos</label>
+            <div class="photo-container" id="photoContainer">
+                <div class="photo-upload">
+                    <input type="file" name="family_photos" accept=".jpg,.jpeg,.png" onchange="previewImage(event, this)">
+                    <div class="placeholder">+</div>
+                </div>
+            </div>
 
-        <div class="actions">
-          <button type="submit" class="btn btn-primary">Submit Registration</button>
-        </div>
-      </form>
+            <button type="submit" class="btn-submit">Register</button>
+        </form>
     </section>
 
-    <section class="card glass">
-      <h2 class="subtitle">Notifications</h2>
-      <div id="notifBoard" class="notif-board">Loading...</div>
+    <section class="notifications">
+        <h2>Notifications</h2>
+        <div id="notifBoard">Loading...</div>
     </section>
-  </main>
+</main>
 
-  <script src="/static/app.js"></script>
 </body>
 </html>
