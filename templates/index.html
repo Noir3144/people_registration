@@ -1,46 +1,76 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration - People Portal</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>People Registration</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
-<body>
-<div class="blur-bg"></div>
+<body class="theme-dark">
+  <div class="glass-bg"></div>
 
-<header>
-    <h1>People Registration</h1>
-    <a href="{{ url_for('report_missing_page') }}" class="btn-report">Report Missing</a>
-</header>
+  <header class="nav">
+    <div class="brand">People<span>Portal</span></div>
+    <a class="btn btn-danger pill" href="{{ url_for('report_missing_page') }}">Report Missing</a>
+  </header>
 
-<main>
-    <section class="form-section">
-        <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data">
+  <main class="container">
+    <!-- Registration Card -->
+    <section class="card">
+      <div class="card-head">
+        <h1 class="title">Registration</h1>
+        <p class="sub">Please add your contact and family photos.</p>
+      </div>
+
+      <form action="{{ url_for('register') }}" method="POST" enctype="multipart/form-data" class="form">
+        <div class="grid-2">
+          <div class="field">
             <label>Phone Number</label>
-            <input type="text" name="phone" placeholder="+91XXXXXXXXXX" required>
-
+            <input type="text" name="phone" placeholder="+91XXXXXXXXXX" required />
+          </div>
+          <div class="field">
             <label>WhatsApp Number</label>
-            <input type="text" name="whatsapp" placeholder="+91XXXXXXXXXX" required>
+            <input type="text" name="whatsapp" placeholder="+91XXXXXXXXXX" required />
+          </div>
+        </div>
 
-            <label>Family Photos</label>
-            <div class="photo-container" id="photoContainer">
-                <div class="photo-upload">
-                    <input type="file" name="family_photos" accept=".jpg,.jpeg,.png" onchange="previewImage(event, this)">
-                    <div class="placeholder">+</div>
-                </div>
+        <div class="field">
+          <label>Family Photos</label>
+          <div id="photoContainer" class="photo-row">
+            <!-- Initial slot -->
+            <div class="photo-slot">
+              <input type="file" name="family_photos" accept=".jpg,.jpeg,.png" onchange="previewAndAppend(this)">
+              <div class="slot-body">
+                <div class="slot-plus">+</div>
+                <div class="slot-hint">Add Photo</div>
+              </div>
             </div>
 
-            <button type="submit" class="btn-submit">Register</button>
-        </form>
+            <!-- Inline Add button (always at end) -->
+            <button type="button" class="btn btn-ghost add-btn" onclick="addEmptySlot()">
+              +
+            </button>
+          </div>
+          <div class="hint">Only JPG, JPEG, PNG allowed. Thumbnails will appear instantly.</div>
+        </div>
+
+        <button type="submit" class="btn btn-success wide">Register</button>
+      </form>
     </section>
 
-    <section class="notifications">
-        <h2>Notifications</h2>
-        <div id="notifBoard">Loading...</div>
+    <!-- Notifications Card -->
+    <section class="card">
+      <div class="card-head">
+        <h2 class="title">Notifications</h2>
+        <p class="sub">Latest updates on missing reports.</p>
+      </div>
+      <div id="notifBoard" class="notif-board">Loading...</div>
     </section>
-</main>
+  </main>
 
+  <footer class="footer">
+    <div>© PeoplePortal</div>
+  </footer>
 </body>
 </html>

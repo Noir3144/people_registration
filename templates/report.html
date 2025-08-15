@@ -1,44 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Missing - People Portal</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <script defer src="{{ url_for('static', filename='script.js') }}"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Report Missing</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <script defer src="{{ url_for('static', filename='script.js') }}"></script>
 </head>
-<body>
-<div class="blur-bg"></div>
+<body class="theme-dark">
+  <div class="glass-bg"></div>
 
-<header>
-    <h1>Report Missing</h1>
-    <a href="{{ url_for('index') }}" class="btn-back">← Back</a>
-</header>
+  <header class="nav">
+    <a class="btn btn-ghost pill" href="{{ url_for('index') }}">← Back</a>
+    <div class="brand">Report<span>Missing</span></div>
+    <div></div>
+  </header>
 
-<main>
-    <section class="form-section">
-        <form action="{{ url_for('submit_missing') }}" method="POST" enctype="multipart/form-data">
+  <main class="container">
+    <section class="card">
+      <div class="card-head">
+        <h1 class="title">Submit a Missing Report</h1>
+        <p class="sub">Add contact details and the person’s photo.</p>
+      </div>
+
+      <form action="{{ url_for('submit_missing') }}" method="POST" enctype="multipart/form-data" class="form">
+        <div class="grid-2">
+          <div class="field">
             <label>Phone Number</label>
-            <input type="text" name="phone" placeholder="+91XXXXXXXXXX" required>
-
+            <input type="text" name="phone" placeholder="+91XXXXXXXXXX" required />
+          </div>
+          <div class="field">
             <label>WhatsApp Number</label>
-            <input type="text" name="whatsapp" placeholder="+91XXXXXXXXXX" required>
+            <input type="text" name="whatsapp" placeholder="+91XXXXXXXXXX" required />
+          </div>
+        </div>
 
-            <label>Description</label>
-            <textarea name="description" placeholder="Details about missing person..."></textarea>
+        <div class="field">
+          <label>Description</label>
+          <textarea name="description" rows="4" placeholder="Height, last seen location, clothes, any other info..."></textarea>
+        </div>
 
-            <label>Missing Person Photo</label>
-            <div class="photo-container">
-                <div class="photo-upload">
-                    <input type="file" name="missing_photo" accept=".jpg,.jpeg,.png" onchange="previewImage(event, this)">
-                    <div class="placeholder">+</div>
-                </div>
+        <div class="field">
+          <label>Missing Person Photo</label>
+          <div class="photo-row">
+            <div class="photo-slot">
+              <input type="file" name="missing_photo" accept=".jpg,.jpeg,.png" onchange="previewSingle(this)" required>
+              <div class="slot-body">
+                <div class="slot-plus">+</div>
+                <div class="slot-hint">Add Photo</div>
+              </div>
             </div>
+          </div>
+          <div class="hint">Only JPG, JPEG, PNG allowed.</div>
+        </div>
 
-            <button type="submit" class="btn-submit">Submit Report</button>
-        </form>
+        <button type="submit" class="btn btn-danger wide">Submit Report</button>
+      </form>
     </section>
-</main>
+  </main>
 
+  <footer class="footer">
+    <div>Need help? Contact local authorities immediately.</div>
+  </footer>
 </body>
 </html>
