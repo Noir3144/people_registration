@@ -1,70 +1,66 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Report Missing Person</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Missing Person Report</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body class="ios-bg">
-  <header class="topbar">
-    <div class="brand">Crowd Portal</div>
-    <nav>
-      <a href="{{ url_for('language') }}" class="link">Language</a>
-      <a href="{{ url_for('index') }}" class="link">Register</a>
-      <a href="#" id="notif-btn-2" class="link">Notifications</a>
-    </nav>
+<body>
+  <header class="app-bar">
+    <div class="brand">
+      <div class="brand-badge"></div>
+      <h1>People Connect</h1>
+    </div>
+    <button class="toggle" id="theme-toggle" title="Switch theme">
+      <span class="small muted">Theme</span>
+      <span class="dot"></span>
+    </button>
   </header>
 
-  <main class="container">
-    <section class="card">
-      <h2>Report Missing Person</h2>
-      <form id="missing-form" method="POST" action="{{ url_for('submit_missing') }}" enctype="multipart/form-data">
-        <div class="field">
-          <label>Phone (required)</label>
-          <input type="text" name="phone" required placeholder="+91xxxxxxxxxx">
+  <main class="container" style="display:flex; justify-content:center;">
+    <section class="card" style="max-width: 720px; width: 100%;">
+      <h2>Report a Missing Person</h2>
+      <form id="missing-form" action="{{ url_for('report_missing') }}" method="post" enctype="multipart/form-data" class="mt-18">
+        <div class="row cols-2">
+          <div class="field">
+            <label class="label">Phone (Reporter)</label>
+            <input class="input" type="tel" name="reporter_phone" placeholder="+91xxxxxxxxxx" required>
+          </div>
+          <div class="field">
+            <label class="label">WhatsApp</label>
+            <input class="input" type="tel" name="reporter_whatsapp" placeholder="+91xxxxxxxxxx" required>
+          </div>
         </div>
-
-        <div class="field">
-          <label>WhatsApp (required)</label>
-          <input type="text" name="whatsapp" required placeholder="+91xxxxxxxxxx">
+        <div class="mt-12">
+          <label class="label">Description</label>
+          <textarea class="textarea" name="description"></textarea>
         </div>
-
-        <div class="field">
-          <label>Description</label>
-          <textarea name="description" placeholder="Short description (clothes, age, location)"></textarea>
+        <div class="mt-18">
+          <div class="label">Missing Person Photos</div>
+          <div class="slots" id="missing-slots"></div>
         </div>
-
-        <div class="field">
-          <label>Photos (upload)</label>
-          <div id="missing-slots" class="slots"></div>
-          <!-- hidden file input used for the missing form uploads -->
-          <input type="file" name="missing_photos" id="missing-hidden-input" accept="image/*" style="display:none" multiple>
-          <div class="muted small">Use the upload slot to select photos from device or computer. New slots appear after each upload.</div>
-        </div>
-
-        <div class="actions">
-          <button class="btn" type="submit">Submit Missing Report</button>
+        <div class="mt-24">
+          <button class="btn" type="submit">Submit Report</button>
         </div>
       </form>
     </section>
   </main>
 
-  <div id="notif-modal" class="modal hidden">
-    <div class="modal-card">
-      <header class="modal-header">
-        <h3>Notifications</h3>
-        <button class="close" id="close-notif-2">&times;</button>
-      </header>
-      <div class="modal-body" id="notif-list-2"></div>
-    </div>
-  </div>
-
   <script src="{{ url_for('static', filename='script.js') }}"></script>
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      MissingForm.initUploadSlots();
-      Notif.init('#notif-btn-2', '#notif-modal', '#notif-list-2', '#close-notif-2');
+    if (window.MissingForm?.initUploadSlots) MissingForm.initUploadSlots();
+
+    const root = document.documentElement;
+    const saved = localStorage.getItem('theme');
+    if (saved) root.setAttribute('data-theme', saved);
+    else if (window.matchMedia('(prefers-color-scheme: light)').matches)
+      root.setAttribute('data-theme', 'light');
+
+    document.getElementById('theme-toggle').addEventListener('click', () => {
+      const newTheme = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      root.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
     });
   </script>
 </body>

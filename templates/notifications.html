@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Select Language</title>
+  <title>Notifications</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
@@ -19,24 +19,18 @@
   </header>
 
   <main class="container" style="display:flex; justify-content:center;">
-    <section class="card" style="max-width: 600px; width: 100%; text-align: center;">
-      <h2>Select Your Language</h2>
-      <p class="muted" style="margin-top:6px;">Choose one of the Indian languages below to continue</p>
-      <div class="chips mt-18">
-        {% for lang in languages %}
-          <div class="chip" onclick="selectLanguage('{{ lang.code }}')">{{ lang.name }}</div>
-        {% endfor %}
+    <section class="card" style="max-width: 800px; width: 100%;">
+      <h2>Notification Board</h2>
+      <div id="notif-list" class="mt-18">
+        <div class="muted">Loading…</div>
       </div>
     </section>
   </main>
 
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
   <script>
-    function selectLanguage(code) {
-      localStorage.setItem('lang', code);
-      window.location.href = "{{ url_for('index') }}?lang=" + code;
-    }
+    if (window.Notif?.load) Notif.load();
 
-    // Theme setup
     const root = document.documentElement;
     const saved = localStorage.getItem('theme');
     if (saved) root.setAttribute('data-theme', saved);

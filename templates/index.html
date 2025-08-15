@@ -1,74 +1,141 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title data-i18n="title_register">Registration</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>People Connect</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Optional fallback SF font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
 </head>
-<body class="ios-bg">
-  <header class="topbar">
-    <div class="brand">Crowd Portal</div>
-    <nav>
-      <a href="{{ url_for('language') }}" class="link">Language</a>
-      <a href="#" id="notif-btn" class="link">Notifications</a>
-      <a href="{{ url_for('report_missing_page') }}" class="link">Report Missing</a>
-    </nav>
+<body>
+  <!-- App Bar -->
+  <header class="app-bar">
+    <div class="brand">
+      <div class="brand-badge"></div>
+      <h1>People Connect</h1>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn btn-outline" id="notif-btn" title="Notification Board">
+        🧭 Notification Board
+      </button>
+      <button class="toggle" id="theme-toggle" title="Switch theme">
+        <span class="small muted">Theme</span>
+        <span class="dot"></span>
+      </button>
+    </div>
   </header>
 
   <main class="container">
-    <section class="card">
-      <h2 data-i18n="registration_form">Registration</h2>
-      <form id="reg-form" method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data">
-        <div class="field">
-          <label data-i18n="mobile_no">Mobile No (required)</label>
-          <input type="text" name="phone" required placeholder="+91xxxxxxxxxx">
+    <!-- Left: Registration -->
+    <section class="card" id="registration-card">
+      <div class="card-header">
+        <h2>Registration</h2>
+      </div>
+
+      <form id="reg-form" action="{{ url_for('register') }}" method="post" enctype="multipart/form-data">
+        <div class="row cols-2">
+          <div class="field">
+            <label class="label">Mobile No. <span class="muted">(required)</span></label>
+            <input class="input" type="tel" name="mobile" placeholder="+91xxxxxxxxxx" required>
+          </div>
+          <div class="field">
+            <label class="label">WhatsApp No. <span class="muted">(required)</span></label>
+            <input class="input" type="tel" name="whatsapp" placeholder="+91xxxxxxxxxx" required>
+          </div>
+          <div class="field">
+            <label class="label">Secondary Contact No. <span class="muted">(optional)</span></label>
+            <input class="input" type="tel" name="secondary" placeholder="+91xxxxxxxxxx">
+          </div>
         </div>
 
-        <div class="field">
-          <label data-i18n="whatsapp_no">WhatsApp No (required)</label>
-          <input type="text" name="whatsapp" required placeholder="+91xxxxxxxxxx">
+        <div class="mt-18">
+          <div class="label">Family Photos</div>
+          <div class="slots" id="camera-slots"></div>
         </div>
 
-        <div class="field">
-          <label data-i18n="secondary_no">Secondary Contact No (optional)</label>
-          <input type="text" name="secondary" placeholder="+91xxxxxxxxxx">
+        <div class="mt-24">
+          <button class="btn btn-success" type="submit">Submit Registration</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Right: Missing Report -->
+    <section class="card" id="missing-card">
+      <div class="card-header">
+        <h2>Missing Report</h2>
+      </div>
+
+      <form id="missing-form" action="{{ url_for('report_missing') }}" method="post" enctype="multipart/form-data">
+        <div class="row cols-2">
+          <div class="field">
+            <label class="label">Phone (Reporter) <span class="muted">(required)</span></label>
+            <input class="input" type="tel" name="reporter_phone" placeholder="+91xxxxxxxxxx" required>
+          </div>
+          <div class="field">
+            <label class="label">WhatsApp <span class="muted">(required)</span></label>
+            <input class="input" type="tel" name="reporter_whatsapp" placeholder="+91xxxxxxxxxx" required>
+          </div>
         </div>
 
-        <div class="field">
-          <label data-i18n="photos">Family Photos (use camera)</label>
-          <div id="camera-slots" class="slots"></div>
-          <!-- hidden input that will be filled with captured blobs via JS before submit -->
-          <input type="file" name="family_photos" id="hidden-photo-input" accept="image/*" style="display:none" multiple>
-          <div class="muted small" data-i18n="camera_hint">Click the + slot to capture a photo using your device camera. New slots appear after capture.</div>
+        <div class="mt-12">
+          <label class="label">Description</label>
+          <textarea class="textarea" name="description" placeholder="Add details that can help identify the person..."></textarea>
         </div>
 
-        <div class="actions">
-          <button class="btn" type="submit" id="submit-reg" data-i18n="submit">Submit</button>
+        <div class="mt-18">
+          <div class="label">Missing Person Photos</div>
+          <div class="slots" id="missing-slots"></div>
+        </div>
+
+        <div class="mt-24">
+          <button class="btn" type="submit">Submit Report</button>
         </div>
       </form>
     </section>
   </main>
 
-  <!-- Notifications modal -->
-  <div id="notif-modal" class="modal hidden">
+  <!-- Notifications Modal -->
+  <div class="modal hidden" id="notif-modal" aria-hidden="true">
     <div class="modal-card">
-      <header class="modal-header">
-        <h3>Notifications</h3>
-        <button class="close" id="close-notif">&times;</button>
-      </header>
-      <div class="modal-body" id="notif-list">
-        <!-- loaded via fetch /notifications -->
+      <div class="modal-head">
+        <h3 style="margin:0">Notification Board</h3>
+        <button class="btn btn-outline" id="close-notif">Close</button>
+      </div>
+      <div class="modal-list" id="notif-list">
+        <div class="muted small">Loading…</div>
       </div>
     </div>
   </div>
 
   <script src="{{ url_for('static', filename='script.js') }}"></script>
   <script>
-    // init camera slots for registration
+    // Initialize existing JS modules
     window.addEventListener('DOMContentLoaded', () => {
-      RegForm.initCameraSlots();
-      Notif.init();
+      if (window.RegForm?.initCameraSlots) RegForm.initCameraSlots();
+      if (window.MissingForm?.initUploadSlots) MissingForm.initUploadSlots();
+      if (window.Notif?.init) Notif.init();
+
+      // Theme: set initial from localStorage or prefers-color-scheme
+      const root = document.documentElement;
+      const saved = localStorage.getItem('theme');
+      if (saved === 'light' || saved === 'dark') {
+        root.setAttribute('data-theme', saved);
+      } else {
+        const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+        root.setAttribute('data-theme', prefersLight ? 'light' : 'dark');
+      }
+
+      // Toggle
+      const toggle = document.getElementById('theme-toggle');
+      toggle?.addEventListener('click', () => {
+        const current = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        root.setAttribute('data-theme', current);
+        localStorage.setItem('theme', current);
+      });
     });
   </script>
 </body>
