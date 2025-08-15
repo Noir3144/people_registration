@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Registration | People Portal</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body class="theme-dark">
+  <header class="nav">
+    <div class="brand">People Portal</div>
+    <a class="btn btn-outline" href="/report">Report Missing</a>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="toast">
+          {% for m in messages %}<div class="toast-item">{{ m }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="card glass">
+      <h1 class="title">Registration</h1>
+      <form id="regForm" action="/register" method="POST" enctype="multipart/form-data">
+        <label class="label" for="phone">Phone Number</label>
+        <input class="input" type="text" id="phone" name="phone" placeholder="+91XXXXXXXXXX" required />
+
+        <label class="label" for="whatsapp">WhatsApp Number</label>
+        <input class="input" type="text" id="whatsapp" name="whatsapp" placeholder="+91XXXXXXXXXX" required />
+
+        <label class="label">Family Photos</label>
+        <div id="photoZone" class="photo-zone">
+          <!-- First field -->
+          <label class="drop" aria-label="Upload photo">
+            <span class="plus">+</span>
+            <input type="file" name="family_photos" accept=".jpg,.jpeg,.png" required />
+          </label>
+        </div>
+        <button type="button" id="addPhotoBtn" class="btn btn-subtle">Add another photo</button>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Submit Registration</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="card glass">
+      <h2 class="subtitle">Notifications</h2>
+      <div id="notifBoard" class="notif-board">Loading...</div>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Report Missing | People Portal</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body class="theme-dark">
+  <header class="nav">
+    <div class="brand">People Portal</div>
+    <a class="btn btn-outline" href="/">← Back to Registration</a>
+  </header>
+
+  <main class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="toast">
+          {% for m in messages %}<div class="toast-item">{{ m }}</div>{% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="card glass">
+      <h1 class="title">Report Missing Person</h1>
+      <form action="/submit-missing" method="POST" enctype="multipart/form-data">
+        <label class="label" for="phone">Phone Number</label>
+        <input class="input" type="text" id="phone" name="phone" placeholder="+91XXXXXXXXXX" required />
+
+        <label class="label" for="whatsapp">WhatsApp Number</label>
+        <input class="input" type="text" id="whatsapp" name="whatsapp" placeholder="+91XXXXXXXXXX" required />
+
+        <label class="label">Missing Person Photo</label>
+        <label class="drop large">
+          <span class="plus">+</span>
+          <input type="file" name="missing_photo" accept=".jpg,.jpeg,.png" required />
+        </label>
+
+        <label class="label" for="description">Description</label>
+        <textarea class="input textarea" id="description" name="description" rows="5" placeholder="Age, last seen location, clothes, any other details..."></textarea>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary">Submit Report</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
