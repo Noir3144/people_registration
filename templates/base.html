@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title data-i18n="app.title">Finder Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <!-- Language Modal -->
+  <div id="langModal" class="modal visible">
+    <div class="modal-card glass">
+      <h2 class="modal-title" data-i18n="lang.select_language">Select Language</h2>
+      <div class="lang-grid" id="langList">
+        <!-- Populated by JS -->
+      </div>
+      <button class="btn ghost" id="langSkip" data-i18n="lang.skip">Continue in English</button>
+    </div>
+  </div>
+
+  <!-- Top Bar -->
+  <header class="topbar glass">
+    <div class="brand">
+      <span class="dot"></span>
+      <span data-i18n="app.title">Finder Portal</span>
+    </div>
+    <nav class="nav">
+      <a href="{{ url_for('index') }}" class="link" data-i18n="nav.register">Register</a>
+      <a href="{{ url_for('report_missing_page') }}" class="link" data-i18n="nav.report">Report Missing</a>
+      <a href="{{ url_for('notifications_board') }}" class="link" data-i18n="nav.board">Notification Board</a>
+      <button id="changeLang" class="btn small" data-i18n="lang.change">Change</button>
+    </nav>
+  </header>
+
+  <!-- Flash (i18n keys) -->
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="flash-container">
+      {% for m in messages %}
+        <div class="flash glass" data-i18n="{{ m }}">{{ m }}</div>
+      {% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <!-- Page Content -->
+  <main class="container">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

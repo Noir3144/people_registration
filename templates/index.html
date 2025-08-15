@@ -1,63 +1,49 @@
-<!doctype html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title data-i18n="registration">Registration</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<header class="app-bar">
-  <div class="brand">
-    <div class="brand-badge"></div>
-    <h1>People Connect</h1>
-  </div>
-  <nav class="nav-actions">
-    <a class="ghost" href="{{ url_for('language') }}" data-i18n="change_language">Language</a>
-    <a class="ghost" href="{{ url_for('report_page') }}" data-i18n="missing_report">Missing Report</a>
-    <a class="ghost" href="{{ url_for('notifications_page') }}" data-i18n="notifications">Notifications</a>
-    <button class="toggle" id="theme-toggle" title="Switch theme"><span class="small muted">Theme</span><span class="dot"></span></button>
-  </nav>
-</header>
+{% extends "base.html" %}
+{% block content %}
+<section class="card glass">
+  <h2 data-i18n="reg.title">Family Registration</h2>
+  <p class="muted" data-i18n="reg.subtitle">Upload photos and contact details to help identify and contact you.</p>
 
-<main class="container center">
-  <section class="card glass card-float" style="max-width:900px;">
-    <h2 data-i18n="registration">Registration</h2>
-    <form id="reg-form" action="{{ url_for('register') }}" method="post" enctype="multipart/form-data" class="mt-18">
-      <div class="row cols-3">
-        <div class="field">
-          <label class="label" data-i18n="mobile_no">Mobile No.</label>
-          <input class="input" type="tel" name="mobile_no" placeholder="+91xxxxxxxxxx" required>
-        </div>
-        <div class="field">
-          <label class="label" data-i18n="whatsapp_no">WhatsApp No.</label>
-          <input class="input" type="tel" name="whatsapp_no" placeholder="+91xxxxxxxxxx" required>
-        </div>
-        <div class="field">
-          <label class="label" data-i18n="secondary_no">Secondary Contact (Optional)</label>
-          <input class="input" type="tel" name="secondary_no" placeholder="+91xxxxxxxxxx">
-        </div>
+  <form id="regForm" class="form" action="{{ url_for('register') }}" method="post" enctype="multipart/form-data" novalidate>
+    <div class="grid-2">
+      <div class="form-field">
+        <label for="phone" data-i18n="field.phone">Mobile Number</label>
+        <input id="phone" name="phone" type="tel" required placeholder="+91XXXXXXXXXX" />
       </div>
-
-      <div class="mt-18">
-        <div class="label" data-i18n="photos">Photos</div>
-        <!-- Registration uses CAMERA -->
-        <div class="slots" id="reg-slots" data-mode="camera" data-name="reg_photos[]"></div>
+      <div class="form-field">
+        <label for="whatsapp" data-i18n="field.whatsapp">WhatsApp Number</label>
+        <input id="whatsapp" name="whatsapp" type="tel" required placeholder="+91XXXXXXXXXX" />
       </div>
-
-      <div class="mt-24 row g-12">
-        <button class="btn" type="submit" data-i18n="submit">Submit</button>
-        <a class="ghost" href="{{ url_for('report_page') }}" data-i18n="report_missing">Report Missing</a>
+      <div class="form-field">
+        <label for="secondary" data-i18n="field.secondary">Secondary Contact (Optional)</label>
+        <input id="secondary" name="secondary" type="tel" placeholder="+91XXXXXXXXXX" />
       </div>
-    </form>
-  </section>
-</main>
+    </div>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
-<script>
-  UI.initTheme();
-  I18N.load('{{ lang|default("en") }}');
-  Slots.init('#reg-slots'); // camera capture
-</script>
-</body>
-</html>
+    <div class="form-field">
+      <label data-i18n="field.photos">Photos</label>
+      <div id="photoSlots" class="slots"></div>
+      <!-- Hidden template for slots -->
+      <template id="slotTemplate">
+        <div class="slot glass">
+          <input class="file-input" type="file" name="family_photos" accept="image/*" capture="environment">
+          <div class="placeholder">
+            <div class="plus">+</div>
+            <div class="hint" data-i18n="ui.add_photo">Add Photo</div>
+          </div>
+          <img class="preview" alt="">
+          <div class="slot-actions">
+            <button type="button" class="btn small" data-action="retake" data-i18n="ui.retake">Retake</button>
+            <button type="button" class="btn small danger" data-action="remove" data-i18n="ui.remove">Remove</button>
+          </div>
+        </div>
+      </template>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" type="submit" data-i18n="action.submit">Submit</button>
+      <button class="btn ghost" type="reset" data-i18n="action.reset">Reset</button>
+    </div>
+  </form>
+</section>
+{% endblock %}

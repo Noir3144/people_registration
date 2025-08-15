@@ -1,36 +1,45 @@
-<!doctype html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title data-i18n="notifications">Notifications</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-<header class="app-bar">
-  <div class="brand">
-    <div class="brand-badge"></div>
-    <h1>People Connect</h1>
-  </div>
-  <nav class="nav-actions">
-    <a class="ghost" href="{{ url_for('language') }}" data-i18n="change_language">Language</a>
-    <a class="ghost" href="{{ url_for('index') }}" data-i18n="registration">Registration</a>
-    <button class="toggle" id="theme-toggle" title="Switch theme"><span class="small muted">Theme</span><span class="dot"></span></button>
-  </nav>
-</header>
+{% extends "base.html" %}
+{% block content %}
+<section class="card glass">
+  <h2 data-i18n="board.title">Notification Board</h2>
+  <p class="muted" data-i18n="board.subtitle">Recently reported missing/found items.</p>
 
-<main class="container center">
-  <section class="card glass card-float" style="max-width:900px;">
-    <h2 data-i18n="notifications">Notification Board</h2>
-    <div id="notif-list" class="mt-18 list"></div>
-  </section>
-</main>
+  <div id="board" class="board"></div>
+</section>
 
-<script src="{{ url_for('static', filename='script.js') }}"></script>
 <script>
-  UI.initTheme();
-  I18N.load();
-  Notif.load('{{ url_for("notifications_api") }}');
+  (async function(){
+    try {
+      const res = await fetch("{{ url_for('notifications') }}");
+      const data = await res.json();
+      const el = document.getElementById('board');
+      el.innerHTML = "";
+      if (!data.length) {
+        el.innerHTML = `<div class="empty" data-i18n="board.empty">No notifications yet.</div>`;
+        window.applyI18n && window.applyI18n();
+        return;
+      }
+      for (const item of data) {
+        const card = document.createElement('div');
+        card.className = 'note glass';
+        card.innerHTML = `
+          <div class="note-row">
+            <div class="note-status" data-i18n="board.reported">Reported</div>
+            <div class="note-time">${item.timestamp || ''}</div>
+          </div>
+          <div class="note-row">
+            <div class="note-phone">📞 ${item.phone || ''}</div>
+          </div>
+          <div class="note-row">
+            <div class="note-desc">${(item.description || '').toString().slice(0,140)}</div>
+          </div>
+        `;
+        el.appendChild(card);
+      }
+      window.applyI18n && window.applyI18n();
+    } catch(e){
+      console.error(e);
+    }
+  })();
 </script>
-</body>
-</html>
+{% endblock %}
