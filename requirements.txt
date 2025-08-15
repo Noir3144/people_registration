@@ -1,2 +1,3 @@
 Flask>=2.0
 twilio>=7.0    # optional: only if you plan to send WhatsApp messages via Twilio
+gunicorn>=21.0
