@@ -100,21 +100,6 @@ def index():
     lang = request.cookies.get("lang", "en")
     return render_template("index.html", lang=lang)
 
-@app.route("/language", methods=["GET", "POST"])
-def language():
-    if request.method == "GET":
-        return render_template("language.html")
-    # POST: set language cookie and redirect to index
-    lang = request.form.get("lang", "en")
-    resp = make_response(redirect(url_for("index")))
-    resp.set_cookie("lang", lang, max_age=60*60*24*365)  # 1 year
-    return resp
-
-@app.route("/report", methods=["GET"])
-def report_missing_page():
-    lang = request.cookies.get("lang", "en")
-    return render_template("report.html", lang=lang)
-
 @app.route("/register", methods=["POST"])
 def register():
     try:
@@ -223,15 +208,6 @@ def submit_missing():
         flash(f"Missing report error: {e}")
         return redirect(url_for("report_missing_page"))
 
-@app.route("/notifications", methods=["GET"])
-def notifications():
-    try:
-        data = json.loads(NOTIF_FILE.read_text(encoding="utf-8"))
-    except Exception:
-        data = []
-    data = list(reversed(data))
-    return jsonify(data)
-
 @app.route("/diag/twilio")
 def diag_twilio():
     key = request.args.get("key", "")
@@ -249,3 +225,45 @@ def diag_twilio():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
+
+@app.route("/language", methods=["GET", "POST"])
+def language():
+    INDIAN_LANGUAGES = [
+        {"code": "hi", "name": "Hindi"},
+        {"code": "en", "name": "English"},
+        {"code": "bn", "name": "Bengali"},
+        {"code": "ta", "name": "Tamil"},
+        {"code": "te", "name": "Telugu"},
+        {"code": "ml", "name": "Malayalam"},
+        {"code": "gu", "name": "Gujarati"},
+        {"code": "mr", "name": "Marathi"},
+        {"code": "kn", "name": "Kannada"},
+        {"code": "pa", "name": "Punjabi"},
+        {"code": "ur", "name": "Urdu"},
+    ]
+    if request.method == "GET":
+        return render_template("language.html", languages=INDIAN_LANGUAGES)
+    lang = request.form.get("lang", "en")
+    resp = make_response(redirect(url_for("index")))
+    resp.set_cookie("lang", lang, max_age=60*60*24*365)
+    return resp
+
+
+@app.route("/report", methods=["GET"])
+def report_missing_page():
+    lang = request.cookies.get("lang", "en")
+    return render_template("report.html", lang=lang)
+
+
+@app.route("/notifications", methods=["GET"])
+def notifications():
+    try:
+        data = json.loads(NOTIF_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        data = []
+    data = list(reversed(data))
+
+    if request.accept_mimetypes.accept_json and not request.accept_mimetypes.accept_html:
+        return jsonify(data)
+
+    return render_template("notifications.html", notifications=data)
